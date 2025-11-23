@@ -25,7 +25,15 @@ export class OAuthComponent implements OnInit {
 
 
   ngOnInit (): void {
-    this.userService.oauthLogin(this.parseRedirectUrlParams().access_token).subscribe({
+
+  const params = this.parseRedirectUrlParams();
+  const accessToken = params.access_token
+  const returnedState = params.state
+  const storedState = sessionStorage.getItem('oauth_state');
+
+  if (accessToken && returnedState === storedState) {
+    console.log("siema")
+      this.userService.oauthLogin(accessToken).subscribe({
       next: (profile: any) => {
         const password = btoa(profile.email.split('').reverse().join(''))
         this.userService.save({ email: profile.email, password, passwordRepeat: password }).subscribe({
@@ -39,8 +47,12 @@ export class OAuthComponent implements OnInit {
         this.invalidateSession(error)
         this.ngZone.run(async () => await this.router.navigate(['/login']))
       }
-    })
+    });
+  } else {
+    console.warn('OAuth login failed or state mismatch.');
   }
+}
+
 
   login (profile: any) {
     this.userService.login({ email: profile.email, password: btoa(profile.email.split('').reverse().join('')), oauth: true }).subscribe({
