@@ -15,6 +15,19 @@ export function servePublicFiles () {
   return ({ params, query }: Request, res: Response, next: NextFunction) => {
     const file = params.file
 
+    if (/\0/.test(file)) {
+      return res.status(403).send('Invalid file name')
+    }
+
+    if (/%[0-9a-fA-F]{2}/.test(file)) {
+      return res.status(403).send('Invalid file name')
+    }
+
+
+    if (file.includes('/') || file.includes('\\')) {
+      return res.status(403).send('Invalid file name')
+    }
+
     if (!file.includes('/')) {
       verify(file, res, next)
     } else {
