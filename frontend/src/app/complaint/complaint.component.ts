@@ -128,15 +128,20 @@ export class ComplaintComponent implements OnInit {
     });
   }
 
+  checkType(file): boolean {
+    if (!file) return false;
+
+    const extension = file?.file?.name.split(".").pop()?.toLowerCase() || "";
+    const allowedExtensions = ["pdf", "zip"];
+
+    return allowedExtensions.includes(extension);
+  }
+
   save() {
-    const file = this.uploader.queue[0];
-    if (file) {
-      if (this.uploader.isMimeTypeAllowed(file)) {
-        file.upload();
+    if (this.uploader.queue[0]) {
+      if (this.checkType(this.uploader.queue[0])) {
+        this.uploader.queue[0].upload();
         this.fileControl.nativeElement.value = null;
-      } else {
-        this.fileUploadError = { name: "mimeType" };
-        console.error("File type not allowed");
       }
     } else {
       this.saveComplaint();
